@@ -10,6 +10,8 @@ import ErrorPage from './Pages/ErrorPage';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import LibraryRoot from './Pages/Librarian/Root';
+import BooksCatalog from './Pages/Librarian/BooksCatalog';
+import BookRecord from './Pages/Librarian/BooksRecord';
 
 const router = createBrowserRouter([
   {
@@ -27,7 +29,17 @@ const router = createBrowserRouter([
   },
   {
     path: '/librarian-dashboard',
-    element: <LibraryRoot />
+    element: <LibraryRoot />,
+    children: [
+      {
+        path: '/librarian-dashboard/catalog',
+        element: <BooksCatalog />,
+      },
+      {
+        path: '/librarian-dashboard/record',
+        element: <BookRecord />
+      }
+    ]
   },
   {
     path: '/student-dashboard',

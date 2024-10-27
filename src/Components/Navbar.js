@@ -1,4 +1,8 @@
-export default function Navbar() {
+import {
+    Link
+} from 'react-router-dom'
+
+export default function Navbar({ title, links }) {
     return (
         <div className="navbar shadow-sm border">
             <div className="navbar-start">
@@ -20,26 +24,30 @@ export default function Navbar() {
                     <ul
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                        <li>
-                            <p>Libros</p>
-                            <ul className="p-2">
-                                <li><a>Catalogo</a></li>
-                            </ul>
-                        </li>
+                        {
+                            links.map((link, index) => {
+                                return (
+                                    <li key={index}>
+                                        <Link to={'/librarian-dashboard'+link.href}>{link.label}</Link>
+                                    </li>
+                                )
+                            })
+                        }
                     </ul>
                 </div>
-                <a className="btn btn-ghost text-xl">Biblioteca</a>
+                <a className="btn btn-ghost text-xl">{title}</a>
             </div>
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
-                    <li>
-                        <details>
-                            <summary>Libros</summary>
-                            <ul className="p-2">
-                                <li><a>Catalogo</a></li>
-                            </ul>
-                        </details>
-                    </li>
+                    {
+                        links.map((link, index) => {
+                            return (
+                                <li key={index}>
+                                    <Link className='font-semibold text-indigo-600' to={'/librarian-dashboard'+link.href}>{link.label}</Link>
+                                </li>
+                            )
+                        })
+                    }
                 </ul>
             </div>
             <div className="navbar-end">
