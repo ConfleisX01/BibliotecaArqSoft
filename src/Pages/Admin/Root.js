@@ -1,24 +1,28 @@
 import Navbar from "../../Components/Navbar";
-import { Outlet, Navigate } from "react-router-dom";
+
+import {
+    Outlet,
+    Navigate
+} from 'react-router-dom'
 
 const links = [
     {
-        label: 'Registro de libros',
-        href: '/librarian-dashboard/record'
-    },
+        label: 'Administración de usuarios',
+        href: '/admin-dashboard/users'
+    }
 ]
 
-export default function LibraryRoot() {
+export default function AdminRoot() {
     return (
         <>
             <div>
                 <Navbar
-                    title={'Biblioteca'}
+                    title={'Administrador'}
                     links={links}
                 />
             </div>
             <div>
-                <Navigate to={'/librarian-dashboard/record'} />
+                <Navigate to={'/admin-dashboard/users'} />
                 <Outlet />
             </div>
         </>

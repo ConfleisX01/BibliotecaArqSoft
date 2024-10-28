@@ -2,8 +2,28 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BiHide } from "react-icons/bi";
 import { FaEye } from "react-icons/fa";
+import { FaPen } from "react-icons/fa";
 
 export default function BookRecord() {
+    const [bookList, setBookList] = useState([])
+
+    const [selectedBook, setSelectedBook] = useState()
+
+    const getBooksList = () => {
+        axios.get('http://localhost:3001/books/list')
+            .then(function (response) {
+                setBookList(response.data)
+
+            })
+            .catch(function (error) {
+
+            })
+    }
+
+    useEffect(() => {
+        getBooksList()
+    }, [])
+
     return (
         <div className="p-4">
             <div className="toast toast-end">
@@ -14,7 +34,10 @@ export default function BookRecord() {
                         <h2 className="font-semibold text-indigo-600 text-3xl">Gestión de libros</h2>
                     </div>
                     <div className="mt-5">
-                        <Form />
+                        <Form
+                            refreshBooks={getBooksList}
+                            selectedBook={selectedBook}
+                        />
                     </div>
                 </div>
                 <div>
@@ -22,7 +45,11 @@ export default function BookRecord() {
                         <h2 className="font-semibold text-indigo-600 text-3xl">Tabla de libros</h2>
                     </div>
                     <div className="overflow-x-auto">
-                        <Table />
+                        <Table
+                            books={bookList}
+                            selectedBook={setSelectedBook}
+                            refreshBooks={getBooksList}
+                        />
                     </div>
                 </div>
             </div>
@@ -30,15 +57,31 @@ export default function BookRecord() {
     )
 }
 
-function Form() {
+function Form({ refreshBooks, selectedBook }) {
+    const [bookId, setBookId] = useState('')
     const [bookName, setBookName] = useState('')
     const [bookAuthor, setBookAuthor] = useState('')
     const [bookGenre, setBookGenre] = useState('')
     const [bookRoute, setBookRoute] = useState('')
 
-    const recordBook = (event) => {
-        event.preventDefault()
+    const [isUpdating, setIsUpdating] = useState(false)
 
+    useEffect(() => {
+        if (selectedBook) {
+            setIsUpdating(true)
+            loadBookInformation()
+        }
+    }, [selectedBook])
+
+    const loadBookInformation = () => {
+        setBookId(selectedBook.book_id)
+        setBookName(selectedBook.book_name)
+        setBookAuthor(selectedBook.book_author)
+        setBookGenre(selectedBook.book_genre)
+        setBookRoute(selectedBook.book_route)
+    }
+
+    const recordBook = () => {
         const data = {
             bookName: bookName,
             bookAuthor: bookAuthor,
@@ -48,10 +91,31 @@ function Form() {
 
         axios.post('http://localhost:3001/books/create', data)
             .then(function (response) {
-
+                console.log(response.data)
+                refreshBooks()
+                setIsUpdating(false)
             })
             .catch(function (error) {
 
+            })
+    }
+
+    const updateBook = () => {
+        const data = {
+            bookId: bookId,
+            bookName: bookName,
+            bookAuthor: bookAuthor,
+            bookGenre: bookGenre,
+            bookRoute: bookRoute
+        }
+
+        axios.post('http://localhost:3001/books/update', data)
+            .then(function (response) {
+                console.log(response.data)
+                isUpdating(false)
+            })
+            .then(function (error) {
+                console.error(error)
             })
     }
 
@@ -121,40 +185,44 @@ function Form() {
                 </div>
             </div>
             <div className="text-end">
-                <button
-                    className="btn btn-info w-32"
-                    onClick={(event) => {
-                        recordBook(event)
-                    }}
-                >
-                    Registrar Libro
-                </button>
+                {
+                    isUpdating ?
+                        <button
+                            className="btn btn-warning"
+                            onClick={() => updateBook()}
+                        >Actualizar libro</button> :
+                        <button
+                            className="btn btn-primary"
+                            onClick={(e) => recordBook(e)}
+                        >Crear Libro
+                        </button>
+                }
             </div>
         </form>
     )
 }
 
-function Table() {
-    const [bookList, setBookList] = useState([])
+function Table({ books, selectedBook, refreshBooks }) {
+    
+    const updateBookStatus = (bookId, bookStatus) => {
+        const data = {
+            bookId: bookId,
+            bookStatus: bookStatus
+        }
 
-    const getBooksList = () => {
-        axios.get('http://localhost:3001/books/list')
+        axios.post('http://localhost:3001/books/updateStatus', data)
             .then(function (response) {
-                setBookList(response.data)
-
+                console.log(response.data)
+                refreshBooks()
             })
             .catch(function (error) {
-
+                console.error(error)
             })
-    }
 
-    useEffect(() => {
-        getBooksList()
-    }, [])
+    }
 
     return (
         <table className="table">
-            {/* head */}
             <thead>
                 <tr>
                     <th></th>
@@ -165,24 +233,38 @@ function Table() {
             </thead>
             <tbody>
                 {
-                    bookList.map((book, index) => {
+                    books.map((book, index) => {
                         return (
-                            <tr>
-                                <th>{index}</th>
+                            <tr key={index}>
+                                <th>{index + 1}</th>
                                 <td>{book.book_name}</td>
-                                <td>{book.author}</td>
-                                <td>
+                                <td>{book.book_author}</td>
+                                <td className="flex gap-2">
                                     <div>
                                         {
                                             book.book_status ?
-                                                <button className="btn btn-sm btn-square btn-outline btn-error">
+                                                <button
+                                                    className="btn btn-sm btn-square btn-outline btn-error"
+                                                    onClick={() => updateBookStatus(book.book_id, !book.book_status)}
+                                                >
                                                     <BiHide />
                                                 </button>
                                                 :
-                                                <button className="btn btn-sm btn-square btn-outline btn-success">
+                                                <button
+                                                    className="btn btn-sm btn-square btn-outline btn-success"
+                                                    onClick={() => updateBookStatus(book.book_id, !book.book_status)}
+                                                >
                                                     <FaEye />
                                                 </button>
                                         }
+                                    </div>
+                                    <div>
+                                        <button
+                                            className="btn btn-sm btn-square btn-warning btn-outline"
+                                            onClick={() => selectedBook(book)}
+                                        >
+                                            <FaPen />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

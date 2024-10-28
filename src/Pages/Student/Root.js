@@ -1,24 +1,24 @@
-import Navbar from "../../Components/Navbar";
 import { Outlet, Navigate } from "react-router-dom";
+import Navbar from "../../Components/Navbar";
 
 const links = [
     {
-        label: 'Registro de libros',
-        href: '/librarian-dashboard/record'
-    },
+        label: 'Catálogo',
+        href: '/student-dashboard/books'
+    }
 ]
 
-export default function LibraryRoot() {
+export default function StudentRoot() {
     return (
         <>
             <div>
                 <Navbar
-                    title={'Biblioteca'}
+                    title={'Estudiante'}
                     links={links}
                 />
             </div>
             <div>
-                <Navigate to={'/librarian-dashboard/record'} />
+                <Navigate to={'/student-dashboard/books'}/>
                 <Outlet />
             </div>
         </>

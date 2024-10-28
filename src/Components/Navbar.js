@@ -28,7 +28,7 @@ export default function Navbar({ title, links }) {
                             links.map((link, index) => {
                                 return (
                                     <li key={index}>
-                                        <Link to={'/librarian-dashboard'+link.href}>{link.label}</Link>
+                                        <Link to={link.href}>{link.label}</Link>
                                     </li>
                                 )
                             })
@@ -43,7 +43,7 @@ export default function Navbar({ title, links }) {
                         links.map((link, index) => {
                             return (
                                 <li key={index}>
-                                    <Link className='font-semibold text-indigo-600' to={'/librarian-dashboard'+link.href}>{link.label}</Link>
+                                    <Link className='font-semibold text-indigo-600' to={link.href}>{link.label}</Link>
                                 </li>
                             )
                         })
@@ -53,16 +53,14 @@ export default function Navbar({ title, links }) {
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                        <div className="w-10 rounded-full">
-                            <img
-                                alt="Tailwind CSS Navbar component"
-                                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                        <div className="ring-primary ring-offset-base-100 w-10 rounded-full ring ring-offset-2">
+                            <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
                         </div>
                     </div>
                     <ul
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                        <li><a>Cerrar Sesión</a></li>
+                        <li><Link to={'/login'}>Cerrar Sesión</Link></li>
                     </ul>
                 </div>
             </div>

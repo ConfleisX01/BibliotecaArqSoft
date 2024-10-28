@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Card from "../../Components/Card";
 import axios from "axios";
 
 import Toast from "../../Components/Toast";
@@ -29,16 +28,6 @@ export default function BooksCatalog() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {
-                        booksList.map((book, index) => {
-                            return (
-                                <Card
-                                    key={index}
-                                    bookTitle={book.book_name}
-                                    bookAuthor={book.author}
-                                    bookGenre={book.gender}
-                                />
-                            )
-                        })
                     }
                 </div>
             </div>
