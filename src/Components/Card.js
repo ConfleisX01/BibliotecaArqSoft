@@ -1,18 +1,13 @@
-import { FaBook } from "react-icons/fa6";
+import PdfViewer from "./PdfViewer";
 
-import {
-    Link
-} from 'react-router-dom'
-
-export default function Card({ bookTitle, bookAuthor, bookGenre, bookId, university }) {
+export default function Card({ bookTitle, bookAuthor, bookGenre, university, pdf, setBookSelected }) {
+    const openBook = () => {
+        setBookSelected(pdf)
+    }
     return (
         <article className="flex bg-white transition hover:shadow-xl h-full shadow-sm">
             <div className="hidden sm:block sm:basis-56">
-                <img
-                    alt=""
-                    src="https://imgs.search.brave.com/6IMzIN1fJsevQRNwZjjz7x4WWMS5q-292NI0ynKSJj8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvNTY1/MTcxMzEvcGhvdG8v/Ym9va2Nhc2UuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPUtK/elRtQ0RZUlNjRWVJ/dWgtc25SQXlKaFJP/Nk8ta1I5YWRnYjE5/Vlg5bVk9"
-                    className="aspect-square h-full w-full object-cover"
-                />
+                <PdfViewer base64={pdf} />
             </div>
 
             <div className="flex flex-1 flex-col justify-between">
@@ -40,12 +35,12 @@ export default function Card({ bookTitle, bookAuthor, bookGenre, bookId, univers
                     <p className="flex-1 block bg-yellow-500 px-5 py-3 text-center text-xs font-bold uppercase text-gray-900">
                         {bookGenre}
                     </p>
-                    <Link
-                        to={`/student-dashboard/reader/${bookId}`}
+                    <button
                         className="flex-1 block bg-indigo-500 px-5 py-3 text-center text-xs font-bold uppercase text-gray-900 transition hover:bg-indigo-400"
+                        onClick={openBook}
                     >
                         Leer Libro
-                    </Link>
+                    </button>
                 </div>
             </div>
         </article>

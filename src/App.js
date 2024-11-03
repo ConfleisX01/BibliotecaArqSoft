@@ -15,8 +15,10 @@ import BooksCatalog from './Pages/Librarian/BooksCatalog';
 import BookRecord from './Pages/Librarian/BooksRecord';
 import StudentRoot from './Pages/Student/Root';
 import BooksList from './Pages/Student/BooksCatalog';
-import BookReader from './Pages/Student/BookReader';
 import UsersCreate from './Pages/Admin/UsersCreate';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const router = createBrowserRouter([
   {
@@ -53,10 +55,6 @@ const router = createBrowserRouter([
       {
         path: '/student-dashboard/books',
         element: <BooksList />
-      },
-      {
-        path: '/student-dashboard/reader/:id',
-        element: <BookReader />
       }
     ]
   },
@@ -75,6 +73,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
+      <ToastContainer />
       <RouterProvider router={router} />
     </>
   );

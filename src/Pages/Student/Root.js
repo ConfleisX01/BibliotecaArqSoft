@@ -18,7 +18,7 @@ export default function StudentRoot() {
                 />
             </div>
             <div>
-                <Navigate to={'/student-dashboard/books'}/>
+                <Navigate to={'/student-dashboard/books'} />
                 <Outlet />
             </div>
         </>

@@ -1,65 +1,60 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaBookOpen } from "react-icons/fa";
 
 import axios from 'axios'
-import Toast from "../Components/Toast";
+import { toast } from 'react-toastify'
 
 export default function Login() {
     const [userName, setUserName] = useState('')
     const [userPass, setUserPass] = useState('')
-    const [toastMessages, setToastMessages] = useState([])
+    const [toastData, setToastData] = useState({})
+
+    useEffect(() => {
+        showMessage(toastData)
+    }, [toastData])
+
+    const showMessage = (data) => {
+        if (data.type === 'success') {
+            toast.success(data.message)
+        } else if (data.type === 'error') {
+            toast.error(data.message)
+        } else if (data.type === 'warning') {
+            toast.warning(data.message)
+        }
+    }
 
     const login = (event) => {
         event.preventDefault()
 
-        axios.get(`http://localhost:3001/login/${userName}/${userPass}`)
+        if (userName.length === 0 || userPass.length === 0) {
+            setToastData({ type: 'warning', message: 'Debe de llenar todos los campos.' })
+            return
+        }
+
+        axios.get(`http://localhost:3001/login/loginUser/${userName}/${userPass}`)
             .then(response => {
-                const result = response.data
-
-                console.log(result)
-
                 if (response.status === 200) {
-                    const user = result.result[0].user_rol
+                    const user = response.data[0].user_rol
+                    setToastData({ type: 'success', message: 'Inicio de sesion correcto.' })
 
-                    if (user === 'ADM') {
-                        window.location = '/admin-dashboard'
-                    }
+                    if (user === 'ADM') window.location = '/admin-dashboard'
+                    if (user === 'BLB') window.location = '/librarian-dashboard'
+                    if (user === 'ALU') window.location = '/student-dashboard'
 
-                    if (user === 'BLB') {
-                        window.location = '/librarian-dashboard'
-                    }
-
-                    if (user === 'ALU') {
-                        window.location = '/student-dashboard'
-                    }
                 }
             })
             .catch(error => {
-                if (error.response.data.result) {
-                    const message = error.response?.data?.result || "Error al iniciar sesión"
-                    addToastMessage({ type: 'error', text: message })
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
                 }
-            });
-    }
-
-    const addToastMessage = (newMessage) => {
-        setToastMessages((prevMessages) => [...prevMessages, newMessage])
-
-        setTimeout(() => {
-            setToastMessages((prevMessages) => prevMessages.slice(1))
-        }, 3000)
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
+            })
     }
 
     return (
         <>
             <div className="h-screen">
-                <div className="toast">
-                    {
-                        toastMessages.map((message, index) => (
-                            <Toast key={index} message={message.text} type={message.type} />
-                        ))
-                    }
-                </div>
                 <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
                     <div className="sm:mx-auto sm:w-full sm:max-w-sm">
                         <FaBookOpen size={50} className="mx-auto" />
@@ -68,7 +63,7 @@ export default function Login() {
                         </h2>
                     </div>
                     <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                        <form className="space-y-6">
+                        <div className="space-y-6">
                             <div>
                                 <label className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
                                 <div className="mt-2">
@@ -101,7 +96,7 @@ export default function Login() {
                                     Iniciar Sesión
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>

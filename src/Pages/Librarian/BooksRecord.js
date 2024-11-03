@@ -3,33 +3,53 @@ import { useEffect, useState } from "react";
 import { BiHide } from "react-icons/bi";
 import { FaEye } from "react-icons/fa";
 import { FaPen } from "react-icons/fa";
+import PDFViewer from "./Converter";
+import { toast } from 'react-toastify';
 
 export default function BookRecord() {
     const [bookList, setBookList] = useState([])
+    const [toastData, setToastData] = useState({})
 
     const [selectedBook, setSelectedBook] = useState()
 
-    const getBooksList = () => {
-        axios.get('http://localhost:3001/books/list')
-            .then(function (response) {
-                setBookList(response.data)
+    useEffect(() => {
+        showMessage(toastData)
+    }, [toastData])
 
+    const showMessage = (data) => {
+        if (data.type === 'success') {
+            toast.success(data.message)
+        } else if (data.type === 'error') {
+            toast.error(data.message)
+        } else if (data.type === 'warning') {
+            toast.warning(data.message)
+        }
+    }
+
+    const getBooksList = () => {
+        axios.get('http://localhost:3001/books/getBooksList')
+            .then(function (response) {
+                if (response.status === 200) {
+                    setBookList(response.data)
+                }
             })
             .catch(function (error) {
-
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
     }
 
     useEffect(() => {
         getBooksList()
-    }, [])
+    }, [selectedBook])
 
     return (
         <div className="p-4">
-            <div className="toast toast-end">
-            </div>
-            <div className="w-full grid grid-cols-1 gap-y-5 sm:grid-cols-2 sm:gap-y-0 sm:gap-2">
-                <div>
+            <div className="w-full grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
+                <div className="lg:col-span-2">
                     <div>
                         <h2 className="font-semibold text-indigo-600 text-3xl">Gestión de libros</h2>
                     </div>
@@ -37,8 +57,14 @@ export default function BookRecord() {
                         <Form
                             refreshBooks={getBooksList}
                             selectedBook={selectedBook}
+                            setToastData={setToastData}
                         />
                     </div>
+                </div>
+                <div>
+                    <PDFViewer
+                        base64={selectedBook}
+                    />
                 </div>
                 <div>
                     <div>
@@ -49,6 +75,7 @@ export default function BookRecord() {
                             books={bookList}
                             selectedBook={setSelectedBook}
                             refreshBooks={getBooksList}
+                            setToastData={setToastData}
                         />
                     </div>
                 </div>
@@ -57,7 +84,7 @@ export default function BookRecord() {
     )
 }
 
-function Form({ refreshBooks, selectedBook }) {
+function Form({ refreshBooks, selectedBook, setToastData }) {
     const [bookId, setBookId] = useState('')
     const [bookName, setBookName] = useState('')
     const [bookAuthor, setBookAuthor] = useState('')
@@ -89,14 +116,20 @@ function Form({ refreshBooks, selectedBook }) {
             bookRoute: bookRoute
         }
 
-        axios.post('http://localhost:3001/books/create', data)
+        axios.post('http://localhost:3001/books/createNewBook', data)
             .then(function (response) {
-                console.log(response.data)
-                refreshBooks()
-                setIsUpdating(false)
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    refreshBooks()
+                    setIsUpdating(false)
+                }
             })
             .catch(function (error) {
-
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
     }
 
@@ -109,18 +142,25 @@ function Form({ refreshBooks, selectedBook }) {
             bookRoute: bookRoute
         }
 
-        axios.post('http://localhost:3001/books/update', data)
+        axios.post('http://localhost:3001/books/updateBook', data)
             .then(function (response) {
-                console.log(response.data)
-                isUpdating(false)
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    refreshBooks()
+                    setIsUpdating(false)
+                }
             })
-            .then(function (error) {
-                console.error(error)
+            .catch(function (error) {
+                if (error.status === 404) {
+                    setToastData({ type: 'warning', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
     }
 
     return (
-        <form className="w-full space-y-2">
+        <div className="w-full space-y-2">
             <div>
                 <label className="block text-sm font-medium leading-6 text-gray-900">Nombre del libro</label>
                 <div className="mt-2">
@@ -198,25 +238,31 @@ function Form({ refreshBooks, selectedBook }) {
                         </button>
                 }
             </div>
-        </form>
+        </div>
     )
 }
 
-function Table({ books, selectedBook, refreshBooks }) {
-    
+function Table({ books, selectedBook, refreshBooks, setToastData }) {
+
     const updateBookStatus = (bookId, bookStatus) => {
         const data = {
             bookId: bookId,
             bookStatus: bookStatus
         }
 
-        axios.post('http://localhost:3001/books/updateStatus', data)
+        axios.post('http://localhost:3001/books/updateBookStatus', data)
             .then(function (response) {
-                console.log(response.data)
-                refreshBooks()
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    refreshBooks()
+                }
             })
             .catch(function (error) {
-                console.error(error)
+                if (error.status === 404) {
+                    setToastData({ type: 'warning', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
 
     }

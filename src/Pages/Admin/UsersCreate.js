@@ -1,12 +1,48 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { FaTrashAlt, FaPen } from "react-icons/fa";
+import { toast } from 'react-toastify'
 
 export default function UsersCreate() {
     const [selectedUser, setSelectedUser] = useState(null)
+    const [toastData, setToastData] = useState({})
+    const [usersList, setUsersList] = useState([])
+    const [updateUsersList, setUpdateUsersList] = useState(null)
+
+    useEffect(() => {
+        showMessage(toastData)
+    }, [toastData])
 
     const loadUserInformation = (user) => {
         setSelectedUser(user)
+    }
+
+    const getUsersList = () => {
+        axios.get('http://localhost:3001/users/getUsersList')
+            .then(function (response) {
+                setUsersList(response.data)
+            })
+            .catch(function (error) {
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
+            })
+    }
+
+    useEffect(() => {
+        getUsersList()
+    }, [updateUsersList])
+
+    const showMessage = (data) => {
+        if (data.type === 'success') {
+            toast.success(data.message)
+        } else if (data.type === 'error') {
+            toast.error(data.message)
+        } else if (data.type === 'warning') {
+            toast.warning(data.message)
+        }
     }
 
     return (
@@ -14,22 +50,31 @@ export default function UsersCreate() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
                 <div className="w-full">
                     <h2 className='text-3xl text-indigo-500 font-medium'>Registro de nuevos usuarios</h2>
-                    <Form selectedUser={selectedUser} />
+                    <Form
+                        selectedUser={selectedUser}
+                        setToastData={setToastData}
+                        setUpdateUsersList={setUpdateUsersList}
+                    />
                 </div>
                 <div className="w-full">
                     <h2 className='text-3xl text-indigo-500 font-medium'>Tabla de usuarios existentes</h2>
-                    <Table loadUserInformation={loadUserInformation} />
+                    <Table
+                        loadUserInformation={loadUserInformation}
+                        setToastData={setToastData}
+                        usersList={usersList}
+                        setUpdateUsersList={setUpdateUsersList}
+                    />
                 </div>
             </div>
         </div>
     )
 }
 
-function Form({ selectedUser }) {
+function Form({ selectedUser, setToastData, setUpdateUsersList }) {
     const [userId, setUserId] = useState('')
     const [userName, setUserName] = useState('')
     const [userPassword, setUserPassword] = useState('')
-    const [userRol, setUserRol] = useState('')
+    const [userRol, setUserRol] = useState('ADM')
     const [isUpdating, setIsUpdating] = useState(false)
 
     useEffect(() => {
@@ -51,12 +96,20 @@ function Form({ selectedUser }) {
 
         console.log(data)
 
-        axios.post('http://localhost:3001/createAccount', data)
+        axios.post('http://localhost:3001/users/createNewUser', data)
             .then(function (response) {
-                console.log(response.data)
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    setUpdateUsersList(Date.now())
+                    setIsUpdating(false)
+                }
             })
             .catch(function (error) {
-                console.error(error)
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
     }
 
@@ -68,15 +121,20 @@ function Form({ selectedUser }) {
             userRol: userRol
         }
 
-        console.log(data)
-
         axios.post('http://localhost:3001/users/updateUser', data)
             .then(function (response) {
-                console.log(response.data)
-                setIsUpdating(false)
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    setUpdateUsersList(Date.now())
+                    setIsUpdating(false)
+                }
             })
             .catch(function (error) {
-                console.error(error)
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
             })
     }
 
@@ -89,11 +147,9 @@ function Form({ selectedUser }) {
             <input type="password" value={userPassword} className="input input-bordered w-full" onChange={(e) => setUserPassword(e.target.value)} />
 
             <label className="block text-sm font-medium">Rol del usuario</label>
-            <select value={userRol} className="select select-bordered w-full" onChange={
-                (e) => {
-                    setUserRol(e.target.value)
-                }
-            }>
+            <select value={userRol} className="select select-bordered w-full"
+                onChange={(e) => { setUserRol(e.target.value) }
+                }>
                 <option value="ADM">Administrador</option>
                 <option value="BLB">Bibliotecario</option>
                 <option value="ALU">Alumno</option>
@@ -107,24 +163,23 @@ function Form({ selectedUser }) {
     )
 }
 
-function Table({ loadUserInformation }) {
-    const [usersList, setUsersList] = useState([])
-
-    const getUsersList = () => {
-        axios.get('http://localhost:3001/users/list')
-            .then(response => setUsersList(response.data))
-            .catch(error => console.error(error))
-    }
-
+function Table({ loadUserInformation, setToastData, usersList, setUpdateUsersList }) {
     const deleteUserAccount = (userId) => {
         axios.post('http://localhost:3001/users/deleteUser', { userId })
-            .then(() => getUsersList())
-            .catch(error => console.error(error))
+            .then(function (response) {
+                if (response.status === 200) {
+                    setToastData({ type: 'success', message: response.data })
+                    setUpdateUsersList(Date.now())
+                }
+            })
+            .catch(function (error) {
+                if (error.status === 404) {
+                    setToastData({ type: 'error', message: error.response.data })
+                    return
+                }
+                setToastData({ type: 'error', message: 'Error de red, intentelo mas tarde.' })
+            })
     }
-
-    useEffect(() => {
-        getUsersList()
-    }, [])
 
     return (
         <div className="overflow-x-auto">
